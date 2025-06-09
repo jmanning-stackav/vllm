@@ -363,6 +363,28 @@ class RotaryEmbedding(CustomOp):
                 key = torch.cat((key_rot, key_pass), dim=-1).reshape(key_shape)
         return query, key
 
+    def forward_triton(
+        self,
+        positions: torch.Tensor,
+        query: torch.Tensor,
+        key: Optional[torch.Tensor] = None,
+        offsets: Optional[torch.Tensor] = None,
+    ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
+        if offsets is not None:
+            offsets = offsets.view(positions.shape[0], -1)
+            positions = positions + offsets
+
+        self.cos_sin_cache = self.cos_sin_cache.to(query.device,
+                                                   dtype=query.dtype)
+
+        if not self.is_neox_style:
+            error_msg = "Currently only NeoX style is supported by Conch"
+            raise NotImplementedError(error_msg)
+
+        from conch.ops.embedding.rotary_embedding import rotary_embedding
+        return rotary_embedding(positions, query, key, self.head_size,
+                                self.cos_sin_cache, self.is_neox_style)
+
     def extra_repr(self) -> str:
         s = f"head_size={self.head_size}, rotary_dim={self.rotary_dim}"
         s += f", max_position_embeddings={self.max_position_embeddings}"

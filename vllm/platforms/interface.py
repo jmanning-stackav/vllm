@@ -4,6 +4,7 @@ import os
 import platform
 import random
 from datetime import timedelta
+from importlib.util import find_spec
 from platform import uname
 from typing import TYPE_CHECKING, NamedTuple, Optional, Union
 
@@ -163,6 +164,9 @@ class Platform:
     def is_cuda_alike(self) -> bool:
         """Stateless version of [torch.cuda.is_available][]."""
         return self._enum in (PlatformEnum.CUDA, PlatformEnum.ROCM)
+
+    def has_conch(self) -> bool:
+        return find_spec("conch") is not None
 
     def is_sleep_mode_available(self) -> bool:
         return self._enum == PlatformEnum.CUDA

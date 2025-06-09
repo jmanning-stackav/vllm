@@ -33,6 +33,9 @@ class CustomOp(nn.Module):
     def forward_cuda(self, *args, **kwargs):
         raise NotImplementedError
 
+    def forward_triton(self, *args, **kwargs):
+        raise NotImplementedError
+
     def forward_hip(self, *args, **kwargs):
         # By default, we assume that HIP ops are compatible with CUDA ops.
         return self.forward_cuda(*args, **kwargs)
@@ -95,6 +98,8 @@ class CustomOp(nn.Module):
             return self.forward_neuron
         elif current_platform.is_out_of_tree():
             return self.forward_oot
+        elif current_platform.has_conch():
+            return self.forward_triton
         else:
             return self.forward_cuda
 

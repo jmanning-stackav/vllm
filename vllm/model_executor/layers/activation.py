@@ -96,6 +96,10 @@ class SiluAndMul(CustomOp):
         result = s * x_reshaped[:, d:]
         return result.view(*x.shape[:-1], d)
 
+    def forward_triton(self, x: torch.Tensor) -> torch.Tensor:
+        from conch.ops.activation.silu_and_mul import silu_and_mul
+        return silu_and_mul(x)
+
 
 @CustomOp.register("mul_and_silu")
 class MulAndSilu(CustomOp):
@@ -161,6 +165,14 @@ class GeluAndMul(CustomOp):
                 self.op = ipex_ops.gelu_and_mul
             else:
                 self.op = ipex_ops.gelu_tanh_and_mul
+        elif current_platform.has_conch():
+            if approximate == "none":
+                error_msg = "gelu_and_mul not yet implemented in Triton"
+                raise NotImplementedError(error_msg)
+            else:
+                from conch.ops.activation.gelu_and_mul import (
+                    gelu_tanh_and_mul as gelu_tanh_and_mul_conch)
+                self.op = gelu_tanh_and_mul_conch
 
     def forward_native(self, x: torch.Tensor) -> torch.Tensor:
         """PyTorch-native implementation equivalent to forward()."""
@@ -180,6 +192,9 @@ class GeluAndMul(CustomOp):
         out = torch.empty(output_shape, dtype=x.dtype, device=x.device)
         self.op(out, x)
         return out
+
+    def forward_triton(self, x: torch.Tensor) -> torch.Tensor:
+        return self.op(x)
 
     def extra_repr(self) -> str:
         return f'approximate={repr(self.approximate)}'

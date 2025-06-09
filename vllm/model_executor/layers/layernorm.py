@@ -214,6 +214,24 @@ class RMSNorm(CustomOp):
             self.variance_epsilon,
         )
 
+    def forward_triton(
+        self,
+        x: torch.Tensor,
+        residual: Optional[torch.Tensor] = None,
+    ) -> Union[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]:
+        import conch.ops.normalization.rms_norm as rms_norm_conch
+
+        if residual is not None:
+            rms_norm_conch.fused_add_rms_norm(x, residual, self.weight.data,
+                                              self.variance_epsilon)
+            return x, residual
+
+        return rms_norm_conch.rms_norm(
+            x,
+            self.weight.data,
+            self.variance_epsilon,
+        )
+
     def extra_repr(self) -> str:
         s = f"hidden_size={self.weight.data.size(0)}"
         s += f", eps={self.variance_epsilon}"
@@ -285,3 +303,16 @@ class GemmaRMSNorm(CustomOp):
                 self.forward_static)
             self._is_compiled = True
         return self.forward_native(x, residual)
+
+    def forward_triton(
+        self,
+        x: torch.Tensor,
+        residual: Optional[torch.Tensor] = None,
+    ) -> Union[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]:
+        from conch.ops.normalization.gemma_rms_norm import gemma_rms_norm
+        return gemma_rms_norm(
+            x,
+            self.weight.data,
+            self.variance_epsilon,
+            residual,
+        )
