@@ -941,6 +941,8 @@ class ModelConfig:
                     "optimized yet. The speed can be slower than "
                     "non-quantized models.", self.quantization)
 
+        # print(f"{self.quantization = }")
+
     def _verify_cuda_graph(self) -> None:
         self.max_seq_len_to_capture = min(self.max_seq_len_to_capture,
                                           self.max_model_len)

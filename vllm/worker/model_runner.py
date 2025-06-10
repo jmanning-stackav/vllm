@@ -1212,14 +1212,14 @@ class GPUModelRunnerBase(ModelRunnerBase[TModelInputForGPU]):
                 self.prompt_adapter_manager.create_prompt_adapter_manager(
                     self.model))
 
-        if self.vllm_config.compilation_config.level ==\
-            CompilationLevel.DYNAMO_AS_IS and supports_dynamo():
-            backend = self.vllm_config.compilation_config.init_backend(
-                self.vllm_config)
-            self.model = torch.compile(
-                self.model,
-                fullgraph=envs.VLLM_TEST_DYNAMO_FULLGRAPH_CAPTURE,
-                backend=backend)
+        # if self.vllm_config.compilation_config.level ==\
+        #     CompilationLevel.DYNAMO_AS_IS and supports_dynamo():
+        #     backend = self.vllm_config.compilation_config.init_backend(
+        #         self.vllm_config)
+        #     self.model = torch.compile(
+        #         self.model,
+        #         fullgraph=envs.VLLM_TEST_DYNAMO_FULLGRAPH_CAPTURE,
+        #         backend=backend)
 
     def get_model(self) -> nn.Module:
         return self.model
