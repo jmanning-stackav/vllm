@@ -111,6 +111,7 @@ class GPTQConfig(QuantizationConfig):
 
     def get_quant_method(self, layer: torch.nn.Module,
                          prefix: str) -> Optional["GPTQLinearMethod"]:
+        print("JACOB!!!! LINEAR QUANT METHOD GPTQ!!")
         return get_linear_quant_method(self, layer, prefix, GPTQLinearMethod)
 
 

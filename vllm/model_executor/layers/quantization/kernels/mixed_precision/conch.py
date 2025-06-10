@@ -67,11 +67,16 @@ class ConchLinearKernel(MPLinearKernel):
                       bias: Optional[torch.Tensor] = None) -> torch.Tensor:
         w_q, w_s, w_zp, _ = self._get_weight_params(layer)
 
+        print(f"{x.shape = }")
+        print(f"{w_q.data.shape = }")
+        print(f"{w_s.data.shape = }")
+        print(f"{w_zp.data.shape = }")
+
         output = mixed_precision_gemm(
             x=x,
-            w_q_packed=w_q,
-            w_s=w_s,
-            w_zp=w_zp,
+            w_q_packed=w_q.data,
+            w_s=w_s.data,
+            w_zp=w_zp.data if w_zp is not None else None,
             weight_size_bits=self.config.weight_type.size_bits,
             weight_bias=self.config.weight_type.bias,
             group_size=self.config.group_size,
