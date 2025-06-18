@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
 import torch
+from conch.ops.vllm.reshape_and_cache import reshape_and_cache
 
 from vllm import _custom_ops as ops
 from vllm import envs
@@ -352,7 +353,8 @@ class TritonAttentionImpl(AttentionImpl):
                     layer._v_scale,
                 )
             else:
-                torch.ops._C_cache_ops.reshape_and_cache_flash(
+                # torch.ops._C_cache_ops.reshape_and_cache_flash(
+                reshape_and_cache(
                     key,
                     value,
                     key_cache,
